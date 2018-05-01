@@ -48,7 +48,7 @@ transactionSpecs wRef wc = do
 
             map txId resp `shouldContain` [txId txn]
 
-        it "asset-locked transactions do not appear in the index" $ do
+        it "asset-locked transactions fail to submit" $ do
             genesis <- genesisAssetLockedWallet wc
             (fromAcct, _) <- firstAccountAndId wc genesis
 
@@ -70,13 +70,7 @@ transactionSpecs wRef wc = do
                 halfOf (V1 c) = V1 (Core.mkCoin (Core.getCoin c `div` 2))
 
             etxn <- postTransaction wc payment
-
-            txn <- fmap wrData etxn `shouldPrism` _Right
-
-            eresp <- getTransactionIndex wc (Just (walId wallet)) (Just (accIndex toAcct)) Nothing
-            resp <- fmap wrData eresp `shouldPrism` _Right
-
-            map txId resp `shouldContain` [txId txn]
+            void $ etxn `shouldPrism` _Left
 
         it "estimate fees of a well-formed transaction" $ do
             ws <- (,)
